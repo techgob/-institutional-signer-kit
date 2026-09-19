@@ -1,0 +1,66 @@
+name: validaciones
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  contrato-de-datos:
+    name: Contrato de datos e ingesta
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install "jsonschema[format]"
+
+      - name: El esquema de ingesta está bien formado
+        run: |
+          python3 - <<'PY'
+          import json
+          from jsonschema import Draft202012Validator
+          Draft202012Validator.check_schema(
+              json.load(open("data-contract/ingesta_documento_pp.schema.json")))
+          print("esquema de ingesta: OK")
+          PY
+
+      - name: Los 7 casos de prueba dan el resultado esperado
+        run: python3 data-contract/validar_ingesta.py --pruebas
+
+      - name: La ordenanza real valida y queda observada
+        run: python3 data-contract/validar_ingesta.py data-contract/ejemplo_ordenanza_001-2026-MPT.json
+
+  plan-de-sprint:
+    name: Plan de sprint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install "jsonschema[format]"
+
+      - name: El esquema del plan está bien formado
+        run: |
+          python3 - <<'PY'
+          import json
+          from jsonschema import Draft202012Validator
+          Draft202012Validator.check_schema(
+              json.load(open("planning/plan_sprint_pp.schema.json")))
+          print("esquema del plan: OK")
+          PY
+
+      - name: Los 11 casos de prueba dan el resultado esperado
+        run: python3 planning/validar_plan_sprint.py --pruebas
+
+      - name: El plan vigente es consistente
+        run: python3 planning/validar_plan_sprint.py planning/sprint_S00_preparacion_postulacion.json
