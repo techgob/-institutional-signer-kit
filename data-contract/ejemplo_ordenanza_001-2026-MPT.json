@@ -1,0 +1,144 @@
+{
+  "version_esquema": "1.0.0",
+  "archivo": {
+    "sha256": "ec76ae49026410ffe48478263c9b1396a29f227f973c762c5e3484243359dc24",
+    "tamano_bytes": 4283322,
+    "paginas": 18,
+    "version_pdf": "1.7",
+    "software_creador": "Nitro PDF Pro 14 (14.23.1.0)",
+    "fecha_creacion_pdf": "2026-02-03T09:41:39-05:00",
+    "fecha_modificacion_pdf": "2026-02-03T09:43:01-05:00",
+    "tipo_contenido": "escaneado_con_ocr",
+    "firma_digital": { "presente": false, "estandar": "ninguna" },
+    "paginas_dimension_atipica": [1],
+    "id_portal": "7687930",
+    "url_fuente_oficial": "https://www.gob.pe/institucion/munitocache/normas-legales/7687930-001-2026-mpt",
+    "fecha_descarga": null,
+    "huella_coincide_con_fuente": false
+  },
+  "identificacion": {
+    "tipo_norma": "ordenanza_municipal",
+    "numero": "001-2026-MPT",
+    "entidad": { "nombre": "Municipalidad Provincial de Tocache", "ruc": "20168745231", "ubigeo": "2210" },
+    "anio_fiscal": 2027,
+    "fecha_emision": "2026-01-28",
+    "organo_aprobador": "concejo_municipal",
+    "sesion": { "tipo": "ordinaria", "fecha": "2026-01-28", "dispensa_lectura_acta": true },
+    "documento_sustento": { "tipo": "informe_tecnico", "numero": "043-2026-MPT/OGPP", "fecha": "2026-01-22", "emisor": "ogpp", "sha256": null },
+    "firmante_cargo": "alcaldia",
+    "firmante_nombre": "Vidal Gonzales Zavaleta",
+    "vistos": ["alcaldia", "gerencia_municipal", "oficina_asuntos_juridicos", "ogpp", "secretaria_general"],
+    "vigencia": {
+      "regla_norma": "dia_siguiente_publicacion",
+      "regla_reglamento": "desde_publicacion",
+      "fecha_publicacion_legal": null,
+      "medio_publicacion_declarado": "periodico_mural",
+      "evidencia_publicacion_sha256": null,
+      "fecha_portal_gobpe": "2026-03-04"
+    }
+  },
+  "evento": {
+    "transicion": "T0_ordenanza_aprobada",
+    "ciclo_id": { "ubigeo": "2210", "numero_norma_genesis": "001-2026-MPT", "anio_fiscal": 2027 },
+    "fecha_acto": "2026-01-28",
+    "retroactivo": true,
+    "firmas_requeridas": ["concejo_municipal", "alcaldia"],
+    "alertas": ["ALERTA_REGISTRO_RETROACTIVO", "ALERTA_VIGENCIA", "ALERTA_FECHA_EN_CONFLICTO", "ALERTA_DATOS_PERSONALES_EN_FUENTE"]
+  },
+  "reglas_proceso": {
+    "fases": ["preparacion", "concertacion", "coordinacion", "formalizacion"],
+    "max_agentes_por_organizacion": 2,
+    "comite": {
+      "miembros": 4,
+      "quorum": null,
+      "incompatible_con_cclp": true,
+      "vigencia_hasta": "culminacion_proyectos",
+      "reglamento_interno_sha256": null
+    },
+    "sustitucion": {
+      "clausula_local": false,
+      "base_normativa": ["Instructivo N.° 001-2010-EF/76.01", "Ordenanza N.° 001-2026-MPT, Reglamento, art. 33"],
+      "instrumento": "resolucion_alcaldia",
+      "requiere_aviso": ["cclp", "comite_vigilancia"]
+    },
+    "cronograma": [
+      { "codigo": "C01", "actividad": "Propuesta y aprobación del Reglamento", "fase": "preparacion", "periodo_declarado": "IV semana de enero 2026", "fecha_inicio": null, "fecha_fin": null, "granularidad": "semana", "fuente": "anexo_1", "transicion_asociada": "T0_ordenanza_aprobada" },
+      { "codigo": "C02", "actividad": "Aprobación y difusión de la Ordenanza", "fase": "preparacion", "periodo_declarado": "IV semana de enero 2026", "fecha_inicio": null, "fecha_fin": null, "granularidad": "semana", "fuente": "anexo_1", "transicion_asociada": "T1_vigente" },
+      { "codigo": "C03", "actividad": "Conformación del Equipo Técnico", "fase": "preparacion", "periodo_declarado": "IV semana de enero 2026", "fecha_inicio": null, "fecha_fin": null, "granularidad": "semana", "fuente": "anexo_1", "transicion_asociada": "T2_convocado" },
+      { "codigo": "C04", "actividad": "Convocatoria pública", "fase": "preparacion", "periodo_declarado": "IV semana de enero a III semana de febrero 2026", "fecha_inicio": null, "fecha_fin": null, "granularidad": "semana", "fuente": "anexo_1", "transicion_asociada": "T2_convocado" },
+      { "codigo": "C05", "actividad": "Identificación e inscripción de agentes participantes", "fase": "preparacion", "periodo_declarado": "IV semana de enero a III semana de febrero 2026", "fecha_inicio": null, "fecha_fin": null, "granularidad": "semana", "fuente": "anexo_1", "transicion_asociada": "T3_acreditacion_cerrada" },
+      { "codigo": "C06", "actividad": "Fase de preparación consolidada", "fase": "preparacion", "periodo_declarado": "Del 28 de enero al 25 de febrero de 2026", "fecha_inicio": "2026-01-28", "fecha_fin": "2026-02-25", "granularidad": "rango", "fuente": "convocatoria", "transicion_asociada": "T3_acreditacion_cerrada" },
+      { "codigo": "C07", "actividad": "Taller único", "fase": "concertacion", "periodo_declarado": "III semana de febrero 2026", "fecha_inicio": null, "fecha_fin": null, "granularidad": "semana", "fuente": "anexo_1", "transicion_asociada": "T4_taller_realizado" },
+      { "codigo": "C08", "actividad": "Taller único", "fase": "concertacion", "periodo_declarado": "25 de febrero 2026", "fecha_inicio": "2026-02-25", "fecha_fin": "2026-02-25", "granularidad": "dia", "fuente": "convocatoria", "transicion_asociada": "T4_taller_realizado" },
+      { "codigo": "C09", "actividad": "Evaluación técnica de proyectos (nivel provincial)", "fase": "concertacion", "periodo_declarado": "25 Febrero 2026", "fecha_inicio": "2026-02-25", "fecha_fin": "2026-02-25", "granularidad": "dia", "fuente": "convocatoria", "transicion_asociada": "T5_priorizado" },
+      { "codigo": "C10", "actividad": "Remisión del informe final al MEF (aplicativo interactivo)", "fase": "formalizacion", "periodo_declarado": "III semana de febrero 2026", "fecha_inicio": null, "fecha_fin": null, "granularidad": "semana", "fuente": "anexo_1", "transicion_asociada": "T8_remitido_mef" },
+      { "codigo": "C11", "actividad": "Remisión del informe final al MEF (aplicativo interactivo)", "fase": "formalizacion", "periodo_declarado": "31 de Marzo 2026", "fecha_inicio": "2026-03-31", "fecha_fin": "2026-03-31", "granularidad": "dia", "fuente": "convocatoria", "transicion_asociada": "T8_remitido_mef" }
+    ],
+    "matriz_priorizacion": {
+      "criterio_base": { "codigo": "relacion_pdc", "efecto_si_no_cumple": "excluye" },
+      "criterios": [
+        { "indice": 0, "codigo": "extrema_pobreza", "valores_permitidos": [1, 5] },
+        { "indice": 1, "codigo": "mas_pobres_sectores_riesgo", "valores_permitidos": [1, 5] },
+        { "indice": 2, "codigo": "caracter_productivo", "valores_permitidos": [1, 5] },
+        { "indice": 3, "codigo": "proyecto_continuidad", "valores_permitidos": [1, 5] },
+        { "indice": 4, "codigo": "necesidades_basicas_insatisfechas", "valores_permitidos": [1, 3, 5, 8] },
+        { "indice": 5, "codigo": "contrapartida", "valores_permitidos": [1, 5] },
+        { "indice": 6, "codigo": "cobertura", "valores_permitidos": [1, 3, 5, 8] },
+        { "indice": 7, "codigo": "caracter_inclusivo", "valores_permitidos": [1, 5] },
+        { "indice": 8, "codigo": "caracter_intersectorial", "valores_permitidos": [1, 5] },
+        { "indice": 9, "codigo": "empleo_local", "valores_permitidos": [1, 5] },
+        { "indice": 10, "codigo": "efectos_actividades_economicas", "valores_permitidos": [1, 5] },
+        { "indice": 11, "codigo": "ingresos_propios", "valores_permitidos": [1, 5] },
+        { "indice": 12, "codigo": "nivel_estudio", "valores_permitidos": [1, 5] }
+      ],
+      "criterios_sin_puntaje": ["sostenibilidad"],
+      "puntaje_minimo": 13,
+      "puntaje_maximo": 71,
+      "regla_desempate": null,
+      "validable_en_taller": true,
+      "sha256_version_validada": null
+    },
+    "lineas_estrategicas": [
+      { "codigo": 1, "nombre": "Dimensión territorial y ambiental" },
+      { "codigo": 2, "nombre": "Dimensión económica" },
+      { "codigo": 3, "nombre": "Dimensión social" },
+      { "codigo": 4, "nombre": "Dimensión político institucional" }
+    ],
+    "ambito": { "distritos": 6, "centros_poblados": 10 },
+    "techo_presupuestal_soles": null,
+    "marco_legal_citado": [
+      { "norma": "Ley N.° 27680", "estado": "vigente", "reemplazada_por": null },
+      { "norma": "Ley N.° 27783", "estado": "vigente", "reemplazada_por": null },
+      { "norma": "Ley N.° 28411", "estado": "sustituida", "reemplazada_por": "Decreto Legislativo N.° 1440" },
+      { "norma": "Ley N.° 27293", "estado": "derogada", "reemplazada_por": "Decreto Legislativo N.° 1252" },
+      { "norma": "Ley N.° 27972", "estado": "vigente", "reemplazada_por": null },
+      { "norma": "Ley N.° 28056", "estado": "modificada", "reemplazada_por": "Modificada por Ley N.° 29298" },
+      { "norma": "Decreto Supremo N.° 142-2009-EF", "estado": "vigente", "reemplazada_por": null },
+      { "norma": "Instructivo N.° 001-2010-EF/76.01", "estado": "vigente", "reemplazada_por": null }
+    ]
+  },
+  "proyectos": [],
+  "validacion": {
+    "estado": "observado",
+    "revisores": ["operador_ingesta"],
+    "fecha_validacion": "2026-09-16T12:00:00-05:00",
+    "inconsistencias": [
+      { "codigo": "INC-01", "severidad": "bloqueante", "descripcion": "La huella se calculó sobre una copia subida por el usuario, no sobre la descarga directa del portal.", "ubicacion": "archivo", "campos_afectados": ["archivo.sha256", "archivo.huella_coincide_con_fuente"], "transiciones_afectadas": ["T0_ordenanza_aprobada"] },
+      { "codigo": "INC-02", "severidad": "alerta", "descripcion": "Sin fecha de publicación legal acreditada; la fecha del portal (4 mar 2026) es posterior al taller del 25 feb 2026.", "ubicacion": "Ordenanza art. 6; LOM art. 44", "campos_afectados": ["identificacion.vigencia.fecha_publicacion_legal"], "transiciones_afectadas": ["T1_vigente", "T4_taller_realizado"] },
+      { "codigo": "INC-03", "severidad": "alerta", "descripcion": "Vigencia distinta: la ordenanza rige al día siguiente de su publicación; el reglamento, desde su publicación.", "ubicacion": "Ordenanza art. 6 vs. Reglamento art. 34", "campos_afectados": ["identificacion.vigencia"], "transiciones_afectadas": ["T1_vigente"] },
+      { "codigo": "INC-04", "severidad": "alerta", "descripcion": "Taller único en la III semana de febrero según el Anexo 1, pero el 25 de febrero según la convocatoria, fecha que cae en la IV semana con las convenciones habituales.", "ubicacion": "Anexo 1 vs. convocatoria", "campos_afectados": ["reglas_proceso.cronograma.C07", "reglas_proceso.cronograma.C08"], "transiciones_afectadas": ["T4_taller_realizado"] },
+      { "codigo": "INC-05", "severidad": "alerta", "descripcion": "Remisión al MEF en la III semana de febrero (Anexo 1) y el 31 de marzo de 2026 (convocatoria).", "ubicacion": "Anexo 1 vs. convocatoria", "campos_afectados": ["reglas_proceso.cronograma.C10", "reglas_proceso.cronograma.C11"], "transiciones_afectadas": ["T8_remitido_mef"] },
+      { "codigo": "INC-06", "severidad": "alerta", "descripcion": "El cronograma no incluye taller de formalización, firma del Acta, elección del Comité ni rendición de cuentas, que exigen los arts. 26 y 31.", "ubicacion": "Anexo 1; Reglamento arts. 26 y 31", "campos_afectados": ["reglas_proceso.cronograma"], "transiciones_afectadas": ["T6_acta_formalizada", "T7_comite_instalado", "T12_rendido_cuentas"] },
+      { "codigo": "INC-07", "severidad": "alerta", "descripcion": "La norma no fija techo presupuestal para el Presupuesto Participativo.", "ubicacion": "Toda la norma", "campos_afectados": ["reglas_proceso.techo_presupuestal_soles"], "transiciones_afectadas": ["T6_acta_formalizada", "T9_incorporado_pia"] },
+      { "codigo": "INC-08", "severidad": "alerta", "descripcion": "La ficha de información mínima por proyecto no tiene campo CUI.", "ubicacion": "Anexo Información mínima por proyecto", "campos_afectados": ["proyectos[].cui"], "transiciones_afectadas": ["T9_incorporado_pia"] },
+      { "codigo": "INC-09", "severidad": "alerta", "descripcion": "La matriz no define regla de desempate.", "ubicacion": "Reglamento art. 25; Anexo 2", "campos_afectados": ["reglas_proceso.matriz_priorizacion.regla_desempate"], "transiciones_afectadas": ["T5_priorizado", "T11_sustituido"] },
+      { "codigo": "INC-10", "severidad": "alerta", "descripcion": "Las plantillas del Anexo 2 y del cuadro de proyectos priorizados incluyen columna de DNI; exigir versión pública antes de anclar su huella.", "ubicacion": "Anexo 2; cuadro de proyectos priorizados", "campos_afectados": ["proyectos"], "transiciones_afectadas": ["T5_priorizado", "T6_acta_formalizada"] },
+      { "codigo": "INC-11", "severidad": "informativa", "descripcion": "Referencias a años 2026 y 2025 arrastradas de plantillas anteriores.", "ubicacion": "Reglamento art. 13; solicitud de inscripción; ficha de proyecto", "campos_afectados": ["identificacion.anio_fiscal"], "transiciones_afectadas": ["T0_ordenanza_aprobada"] },
+      { "codigo": "INC-12", "severidad": "informativa", "descripcion": "Marco legal cita la Ley 28411 y la Ley 27293, reemplazadas por los D. Leg. 1440 y 1252.", "ubicacion": "Reglamento art. 6", "campos_afectados": ["reglas_proceso.marco_legal_citado"], "transiciones_afectadas": ["T0_ordenanza_aprobada"] },
+      { "codigo": "INC-13", "severidad": "informativa", "descripcion": "El criterio sostenibilidad aparece en la matriz sin puntaje y no figura en el Anexo 2.", "ubicacion": "Matriz de criterios; Anexo 2", "campos_afectados": ["reglas_proceso.matriz_priorizacion.criterios_sin_puntaje"], "transiciones_afectadas": ["T5_priorizado"] },
+      { "codigo": "INC-14", "severidad": "informativa", "descripcion": "Sin cláusula local de sustitución de proyectos; se aplica la regla residual del art. 33.", "ubicacion": "Reglamento art. 33", "campos_afectados": ["reglas_proceso.sustitucion.clausula_local"], "transiciones_afectadas": ["T11_sustituido"] },
+      { "codigo": "INC-15", "severidad": "informativa", "descripcion": "Seis distritos descritos como parte del Distrito de Tocache; el ámbito es provincial.", "ubicacion": "Reglamento art. 8", "campos_afectados": ["reglas_proceso.ambito"], "transiciones_afectadas": ["T0_ordenanza_aprobada"] },
+      { "codigo": "INC-16", "severidad": "informativa", "descripcion": "Las páginas de anexos (10 a 18) no llevan sellos ni vistos; la página 1 tiene dimensiones distintas del resto.", "ubicacion": "PDF pp. 1 y 10-18", "campos_afectados": ["archivo.paginas_dimension_atipica"], "transiciones_afectadas": ["T0_ordenanza_aprobada"] }
+    ]
+  }
+}

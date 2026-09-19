@@ -1,0 +1,1452 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://techgob.pe/esquemas/pp/ingesta-documento/1.0.0",
+  "title": "Registro de ingesta de documentos del Presupuesto Participativo",
+  "description": "Contrato de datos entre el PDF oficial y la transacción Stellar/Soroban. Cada campo declara su fuente (x-fuente), su regla de admisión a la cadena (x-admision) y el nivel de validación exigido (x-validacion). Un campo sin x-admision se trata como fuera_de_cadena por defecto.",
+  "x-convenciones": {
+    "x-admision": {
+      "cadena": "El valor se incluye en la carga útil anclada (evento del contrato o compromiso canónico).",
+      "cadena_huella": "Solo la huella SHA-256 del documento referido va a la cadena; el documento queda fuera.",
+      "fuera_de_cadena": "Se conserva en el backend o en el archivo documental; nunca se ancla.",
+      "prohibido": "No puede existir en el registro de ingesta. Lo refuerzan additionalProperties y propertyNames."
+    },
+    "x-fuente": "Formato origen:ubicacion. Ejemplos: pdf:bytes, pdf:metadatos, pdf:p1, pdf:reglamento:art13, pdf:anexo1, pdf:convocatoria, portal:gobpe, externo:INEI, calculado.",
+    "x-validacion": {
+      "automatica": "La obtiene el backend sin intervención humana.",
+      "humana_simple": "Un revisor confirma contra el PDF.",
+      "humana_doble": "Dos roles distintos confirman contra el PDF; obligatorio en documentos escaneados para campos que alimentan guardas del contrato."
+    },
+    "x-guarda": "Código de la guarda del contrato Soroban que lee el campo. Solo estos campos se escriben como estado del contrato; el resto de la carga admitida se compromete por su SHA-256 y se publica fuera de la cadena."
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version_esquema",
+    "archivo",
+    "identificacion",
+    "evento",
+    "reglas_proceso",
+    "proyectos",
+    "validacion"
+  ],
+  "properties": {
+    "version_esquema": {
+      "const": "1.0.0",
+      "x-fuente": "calculado",
+      "x-admision": "cadena",
+      "x-validacion": "automatica"
+    },
+    "archivo": {
+      "$ref": "#/$defs/archivo"
+    },
+    "identificacion": {
+      "$ref": "#/$defs/identificacion"
+    },
+    "evento": {
+      "$ref": "#/$defs/evento"
+    },
+    "reglas_proceso": {
+      "$ref": "#/$defs/reglas_proceso"
+    },
+    "proyectos": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/proyecto"
+      },
+      "description": "Vacío en documentos normativos; poblado desde el cuadro de puntajes (T5) o el Acta (T6)."
+    },
+    "validacion": {
+      "$ref": "#/$defs/validacion"
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "G-ingesta-1: no se aprueba para anclaje sin huella verificada contra la fuente oficial, con inconsistencias bloqueantes o sin doble revisión.",
+      "if": {
+        "properties": {
+          "validacion": {
+            "properties": {
+              "estado": {
+                "const": "aprobado_para_anclaje"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "archivo": {
+            "properties": {
+              "huella_coincide_con_fuente": {
+                "const": true
+              }
+            }
+          },
+          "validacion": {
+            "properties": {
+              "revisores": {
+                "minItems": 2
+              },
+              "inconsistencias": {
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "severidad": {
+                        "const": "bloqueante"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$comment": "G5/G1: la génesis del ciclo solo puede ser una ordenanza municipal.",
+      "if": {
+        "properties": {
+          "evento": {
+            "properties": {
+              "transicion": {
+                "const": "T0_ordenanza_aprobada"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "identificacion": {
+            "properties": {
+              "tipo_norma": {
+                "const": "ordenanza_municipal"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$comment": "G11: la incorporación al PIA exige al menos un proyecto y CUI en todos.",
+      "if": {
+        "properties": {
+          "evento": {
+            "properties": {
+              "transicion": {
+                "const": "T9_incorporado_pia"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "proyectos": {
+            "minItems": 1,
+            "items": {
+              "required": [
+                "cui"
+              ],
+              "properties": {
+                "cui": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$comment": "Tocache, Reglamento art. 33: la sustitución se instrumenta por resolución de alcaldía.",
+      "if": {
+        "properties": {
+          "evento": {
+            "properties": {
+              "transicion": {
+                "const": "T11_sustituido"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "identificacion": {
+            "properties": {
+              "tipo_norma": {
+                "const": "resolucion_alcaldia"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sha256_o_nulo": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "fecha_o_nula": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "rol": {
+      "enum": [
+        "concejo_municipal",
+        "alcaldia",
+        "gerencia_municipal",
+        "secretaria_general",
+        "oficina_asuntos_juridicos",
+        "ogpp",
+        "oficina_planeamiento_modernizacion_inversiones",
+        "gerencia_desarrollo_urbano_infraestructura",
+        "imagen_institucional",
+        "equipo_tecnico",
+        "cclp",
+        "agentes_participantes",
+        "comite_vigilancia",
+        "operador_ingesta"
+      ]
+    },
+    "transicion": {
+      "enum": [
+        "T0_ordenanza_aprobada",
+        "T1_vigente",
+        "T2_convocado",
+        "T3_acreditacion_cerrada",
+        "T4_taller_realizado",
+        "T5_priorizado",
+        "T6_acta_formalizada",
+        "T7_comite_instalado",
+        "T8_remitido_mef",
+        "T9_incorporado_pia",
+        "T10_vigilado",
+        "T11_sustituido",
+        "T12_rendido_cuentas",
+        "T13_ciclo_cerrado"
+      ]
+    },
+    "sin_datos_personales": {
+      "$comment": "Refuerzo explícito de la regla de admisión: ningún nombre de propiedad puede sugerir un dato personal.",
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(dni|documento_identidad|apellido|nombre_agente|nombre_persona|sexo|domicilio|telefono|correo|firma_manuscrita)"
+        }
+      }
+    },
+    "archivo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "tamano_bytes",
+        "paginas",
+        "tipo_contenido",
+        "firma_digital",
+        "id_portal",
+        "huella_coincide_con_fuente"
+      ],
+      "properties": {
+        "sha256": {
+          "$ref": "#/$defs/sha256",
+          "x-fuente": "pdf:bytes",
+          "x-admision": "cadena",
+          "x-validacion": "automatica",
+          "x-guarda": "G1"
+        },
+        "tamano_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "x-fuente": "pdf:bytes",
+          "x-admision": "cadena",
+          "x-validacion": "automatica"
+        },
+        "paginas": {
+          "type": "integer",
+          "minimum": 1,
+          "x-fuente": "pdf:metadatos",
+          "x-admision": "cadena",
+          "x-validacion": "automatica"
+        },
+        "version_pdf": {
+          "type": "string",
+          "x-fuente": "pdf:metadatos",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "automatica"
+        },
+        "software_creador": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-fuente": "pdf:metadatos",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "automatica"
+        },
+        "fecha_creacion_pdf": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "Metadato editable por cualquier software; nunca usarlo como prueba de fecha del acto.",
+          "x-fuente": "pdf:metadatos",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "automatica"
+        },
+        "fecha_modificacion_pdf": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "x-fuente": "pdf:metadatos",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "automatica"
+        },
+        "tipo_contenido": {
+          "enum": [
+            "nativo_digital",
+            "escaneado_con_ocr",
+            "escaneado_sin_ocr"
+          ],
+          "x-fuente": "pdf:fuentes_e_imagenes",
+          "x-admision": "cadena",
+          "x-validacion": "automatica"
+        },
+        "firma_digital": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "presente",
+            "estandar"
+          ],
+          "properties": {
+            "presente": {
+              "type": "boolean"
+            },
+            "estandar": {
+              "enum": [
+                "ninguna",
+                "pades",
+                "cades",
+                "xades"
+              ]
+            }
+          },
+          "x-fuente": "pdf:firmas",
+          "x-admision": "cadena",
+          "x-validacion": "automatica"
+        },
+        "paginas_dimension_atipica": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "uniqueItems": true,
+          "x-fuente": "pdf:metadatos",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "automatica"
+        },
+        "id_portal": {
+          "type": "string",
+          "pattern": "^[0-9]+$",
+          "x-fuente": "portal:gobpe",
+          "x-admision": "cadena",
+          "x-validacion": "automatica"
+        },
+        "url_fuente_oficial": {
+          "type": "string",
+          "format": "uri",
+          "x-fuente": "portal:gobpe",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "automatica"
+        },
+        "fecha_descarga": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "x-fuente": "calculado",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "automatica"
+        },
+        "huella_coincide_con_fuente": {
+          "type": "boolean",
+          "description": "true solo si sha256 se calculó sobre la descarga directa del portal oficial, sin reguardar el archivo.",
+          "x-fuente": "calculado",
+          "x-admision": "cadena",
+          "x-validacion": "automatica"
+        }
+      }
+    },
+    "identificacion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tipo_norma",
+        "numero",
+        "entidad",
+        "anio_fiscal",
+        "fecha_emision",
+        "organo_aprobador",
+        "firmante_cargo",
+        "vigencia"
+      ],
+      "properties": {
+        "tipo_norma": {
+          "enum": [
+            "ordenanza_municipal",
+            "decreto_alcaldia",
+            "resolucion_alcaldia",
+            "acuerdo_concejo",
+            "acta_acuerdos_compromisos",
+            "informe_tecnico",
+            "informe_comite_vigilancia",
+            "constancia_aplicativo_mef",
+            "nota_modificatoria_siaf",
+            "informe_rendicion_cuentas",
+            "otro"
+          ],
+          "x-fuente": "pdf:p1",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble"
+        },
+        "numero": {
+          "type": "string",
+          "pattern": "^[0-9]{3}-[0-9]{4}-[A-Z/-]+$",
+          "x-fuente": "pdf:p1",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble"
+        },
+        "entidad": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "nombre",
+            "ruc",
+            "ubigeo"
+          ],
+          "properties": {
+            "nombre": {
+              "type": "string",
+              "x-fuente": "pdf:encabezado",
+              "x-admision": "fuera_de_cadena",
+              "x-validacion": "humana_simple"
+            },
+            "ruc": {
+              "type": "string",
+              "pattern": "^[0-9]{11}$",
+              "x-fuente": "pdf:encabezado",
+              "x-admision": "cadena",
+              "x-validacion": "humana_doble"
+            },
+            "ubigeo": {
+              "type": "string",
+              "pattern": "^[0-9]{4}([0-9]{2})?$",
+              "description": "4 dígitos para provincia, 6 para distrito. No figura en el documento: se agrega desde el catálogo INEI. Evita la colisión de numeración entre municipalidades con la misma sigla.",
+              "x-fuente": "externo:INEI",
+              "x-admision": "cadena",
+              "x-validacion": "humana_simple"
+            }
+          }
+        },
+        "anio_fiscal": {
+          "type": "integer",
+          "minimum": 2020,
+          "maximum": 2100,
+          "description": "Tomar del título o del artículo dispositivo, nunca de plantillas o anexos (riesgo de años arrastrados).",
+          "x-fuente": "pdf:titulo",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble"
+        },
+        "fecha_emision": {
+          "type": "string",
+          "format": "date",
+          "x-fuente": "pdf:p1",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble"
+        },
+        "organo_aprobador": {
+          "$ref": "#/$defs/rol",
+          "x-fuente": "pdf:p1",
+          "x-admision": "cadena",
+          "x-validacion": "humana_simple"
+        },
+        "sesion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tipo",
+            "fecha"
+          ],
+          "properties": {
+            "tipo": {
+              "enum": [
+                "ordinaria",
+                "extraordinaria"
+              ]
+            },
+            "fecha": {
+              "type": "string",
+              "format": "date"
+            },
+            "dispensa_lectura_acta": {
+              "type": "boolean"
+            }
+          },
+          "x-fuente": "pdf:p1",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble"
+        },
+        "documento_sustento": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tipo",
+            "numero",
+            "fecha",
+            "emisor"
+          ],
+          "properties": {
+            "tipo": {
+              "enum": [
+                "informe_tecnico",
+                "informe_legal",
+                "dictamen",
+                "otro"
+              ],
+              "x-admision": "cadena"
+            },
+            "numero": {
+              "type": "string",
+              "x-admision": "cadena"
+            },
+            "fecha": {
+              "type": "string",
+              "format": "date",
+              "x-admision": "cadena"
+            },
+            "emisor": {
+              "$ref": "#/$defs/rol",
+              "x-admision": "cadena"
+            },
+            "sha256": {
+              "$ref": "#/$defs/sha256_o_nulo",
+              "x-admision": "cadena_huella"
+            }
+          },
+          "x-fuente": "pdf:visto",
+          "x-validacion": "humana_simple"
+        },
+        "firmante_cargo": {
+          "$ref": "#/$defs/rol",
+          "x-fuente": "pdf:firma",
+          "x-admision": "cadena",
+          "x-validacion": "humana_simple"
+        },
+        "firmante_nombre": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Nombre de autoridad pública; es público, pero la regla de la v5 ancla roles, no personas.",
+          "x-fuente": "pdf:firma",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "humana_simple"
+        },
+        "vistos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/rol"
+          },
+          "uniqueItems": true,
+          "x-fuente": "pdf:sellos_margen",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble"
+        },
+        "vigencia": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "regla_norma",
+            "fecha_publicacion_legal",
+            "fecha_portal_gobpe"
+          ],
+          "properties": {
+            "regla_norma": {
+              "enum": [
+                "dia_siguiente_publicacion",
+                "desde_publicacion",
+                "fecha_expresa"
+              ],
+              "x-fuente": "pdf:ordenanza:art6",
+              "x-admision": "cadena"
+            },
+            "regla_reglamento": {
+              "enum": [
+                "dia_siguiente_publicacion",
+                "desde_publicacion",
+                "fecha_expresa",
+                null
+              ],
+              "x-fuente": "pdf:reglamento:art34",
+              "x-admision": "cadena"
+            },
+            "fecha_publicacion_legal": {
+              "$ref": "#/$defs/fecha_o_nula",
+              "description": "Fecha acreditada del medio exigido por la LOM art. 44. Nula mientras no exista evidencia; alimenta la guarda G7.",
+              "x-fuente": "externo:constancia_publicacion",
+              "x-admision": "cadena",
+              "x-validacion": "humana_doble",
+              "x-guarda": "G7"
+            },
+            "medio_publicacion_declarado": {
+              "enum": [
+                "el_peruano",
+                "diario_judicial",
+                "carteles_municipales",
+                "periodico_mural",
+                "portal_electronico",
+                null
+              ],
+              "x-fuente": "pdf:ordenanza:art2",
+              "x-admision": "cadena"
+            },
+            "evidencia_publicacion_sha256": {
+              "$ref": "#/$defs/sha256_o_nulo",
+              "x-fuente": "externo:constancia_publicacion",
+              "x-admision": "cadena_huella"
+            },
+            "fecha_portal_gobpe": {
+              "$ref": "#/$defs/fecha_o_nula",
+              "description": "Fecha visible en gob.pe. Verificable en línea, pero no equivale necesariamente a la publicación legal.",
+              "x-fuente": "portal:gobpe",
+              "x-admision": "cadena",
+              "x-validacion": "automatica"
+            }
+          }
+        }
+      }
+    },
+    "evento": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transicion",
+        "ciclo_id",
+        "fecha_acto",
+        "retroactivo",
+        "firmas_requeridas",
+        "alertas"
+      ],
+      "properties": {
+        "transicion": {
+          "$ref": "#/$defs/transicion",
+          "x-fuente": "calculado",
+          "x-admision": "cadena",
+          "x-validacion": "humana_simple",
+          "x-guarda": "G1"
+        },
+        "ciclo_id": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ubigeo",
+            "numero_norma_genesis",
+            "anio_fiscal"
+          ],
+          "properties": {
+            "ubigeo": {
+              "type": "string",
+              "pattern": "^[0-9]{4}([0-9]{2})?$"
+            },
+            "numero_norma_genesis": {
+              "type": "string"
+            },
+            "anio_fiscal": {
+              "type": "integer"
+            }
+          },
+          "description": "Clave única del ciclo (guarda G2).",
+          "x-fuente": "calculado",
+          "x-admision": "cadena",
+          "x-validacion": "automatica",
+          "x-guarda": "G2"
+        },
+        "fecha_acto": {
+          "type": "string",
+          "format": "date",
+          "description": "Fecha declarada por el documento. La fecha de registro la pone el ledger (guarda G6).",
+          "x-fuente": "pdf:p1",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble",
+          "x-guarda": "G6"
+        },
+        "retroactivo": {
+          "type": "boolean",
+          "x-fuente": "calculado",
+          "x-admision": "cadena",
+          "x-validacion": "automatica",
+          "x-guarda": "G6"
+        },
+        "firmas_requeridas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/rol"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "x-fuente": "pdf:articulado",
+          "x-admision": "cadena",
+          "x-validacion": "humana_simple",
+          "x-guarda": "G1"
+        },
+        "alertas": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "ALERTA_REGISTRO_RETROACTIVO",
+              "ALERTA_VIGENCIA",
+              "ALERTA_FECHA_EN_CONFLICTO",
+              "ALERTA_SIN_PLAZO",
+              "ALERTA_DATOS_PERSONALES_EN_FUENTE"
+            ]
+          },
+          "x-fuente": "calculado",
+          "x-admision": "cadena",
+          "x-validacion": "automatica"
+        }
+      }
+    },
+    "actividad_cronograma": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "codigo",
+        "actividad",
+        "fase",
+        "periodo_declarado",
+        "fecha_inicio",
+        "fecha_fin",
+        "granularidad",
+        "fuente"
+      ],
+      "properties": {
+        "codigo": {
+          "type": "string",
+          "pattern": "^C[0-9]{2}$"
+        },
+        "actividad": {
+          "type": "string"
+        },
+        "fase": {
+          "enum": [
+            "preparacion",
+            "concertacion",
+            "coordinacion",
+            "formalizacion"
+          ]
+        },
+        "periodo_declarado": {
+          "type": "string",
+          "description": "Texto literal del documento, sin interpretar."
+        },
+        "fecha_inicio": {
+          "$ref": "#/$defs/fecha_o_nula",
+          "description": "Nula si el documento solo indica semanas: no inventar la convención de semana."
+        },
+        "fecha_fin": {
+          "$ref": "#/$defs/fecha_o_nula"
+        },
+        "granularidad": {
+          "enum": [
+            "dia",
+            "semana",
+            "rango"
+          ]
+        },
+        "fuente": {
+          "enum": [
+            "anexo_1",
+            "convocatoria",
+            "articulado"
+          ]
+        },
+        "transicion_asociada": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/transicion"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "reglas_proceso": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fases",
+        "comite",
+        "sustitucion",
+        "cronograma",
+        "matriz_priorizacion",
+        "techo_presupuestal_soles"
+      ],
+      "properties": {
+        "fases": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "preparacion",
+              "concertacion",
+              "coordinacion",
+              "formalizacion"
+            ]
+          },
+          "x-fuente": "pdf:reglamento:art15",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "humana_simple"
+        },
+        "max_agentes_por_organizacion": {
+          "type": "integer",
+          "minimum": 1,
+          "x-fuente": "pdf:reglamento:art18",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "humana_simple"
+        },
+        "comite": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "miembros",
+            "quorum",
+            "incompatible_con_cclp",
+            "vigencia_hasta"
+          ],
+          "properties": {
+            "miembros": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "quorum": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1,
+              "description": "Nulo si remite a Reglamento Interno no disponible (guarda G9)."
+            },
+            "incompatible_con_cclp": {
+              "type": "boolean",
+              "description": "Guarda G8."
+            },
+            "vigencia_hasta": {
+              "enum": [
+                "culminacion_proyectos",
+                "fin_anio_fiscal"
+              ]
+            },
+            "reglamento_interno_sha256": {
+              "$ref": "#/$defs/sha256_o_nulo",
+              "x-admision": "cadena_huella"
+            }
+          },
+          "x-fuente": "pdf:reglamento:art13",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble",
+          "x-guarda": "G8,G9"
+        },
+        "sustitucion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "clausula_local",
+            "base_normativa",
+            "instrumento",
+            "requiere_aviso"
+          ],
+          "properties": {
+            "clausula_local": {
+              "type": "boolean",
+              "x-admision": "cadena"
+            },
+            "base_normativa": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "x-admision": "fuera_de_cadena"
+            },
+            "instrumento": {
+              "enum": [
+                "resolucion_alcaldia",
+                "decreto_alcaldia",
+                "acuerdo_concejo"
+              ],
+              "x-admision": "cadena",
+              "x-guarda": "R4"
+            },
+            "requiere_aviso": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/rol"
+              },
+              "x-admision": "cadena"
+            }
+          },
+          "x-fuente": "pdf:reglamento:art33",
+          "x-validacion": "humana_doble"
+        },
+        "cronograma": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/actividad_cronograma"
+          },
+          "description": "Se registran todas las filas de todas las fuentes, aunque se contradigan; la conciliación es una inconsistencia, no una edición.",
+          "x-fuente": "pdf:anexo1+pdf:convocatoria",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble"
+        },
+        "matriz_priorizacion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "criterio_base",
+            "criterios",
+            "puntaje_minimo",
+            "puntaje_maximo",
+            "regla_desempate",
+            "validable_en_taller"
+          ],
+          "properties": {
+            "criterio_base": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "codigo",
+                "efecto_si_no_cumple"
+              ],
+              "properties": {
+                "codigo": {
+                  "const": "relacion_pdc"
+                },
+                "efecto_si_no_cumple": {
+                  "const": "excluye"
+                }
+              }
+            },
+            "criterios": {
+              "type": "array",
+              "minItems": 13,
+              "maxItems": 13,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "indice",
+                  "codigo",
+                  "valores_permitidos"
+                ],
+                "properties": {
+                  "indice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12
+                  },
+                  "codigo": {
+                    "type": "string",
+                    "pattern": "^[a-z_]+$"
+                  },
+                  "valores_permitidos": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "minItems": 2,
+                    "uniqueItems": true
+                  }
+                }
+              }
+            },
+            "criterios_sin_puntaje": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "puntaje_minimo": {
+              "type": "integer"
+            },
+            "puntaje_maximo": {
+              "type": "integer"
+            },
+            "regla_desempate": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Nula en Tocache 2027: activa la exigencia de motivo + firma del Comité al saltar un rango (G10)."
+            },
+            "validable_en_taller": {
+              "type": "boolean"
+            },
+            "sha256_version_validada": {
+              "$ref": "#/$defs/sha256_o_nulo",
+              "x-admision": "cadena_huella"
+            }
+          },
+          "x-fuente": "pdf:reglamento:art25+pdf:anexo2",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble"
+        },
+        "lineas_estrategicas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "codigo",
+              "nombre"
+            ],
+            "properties": {
+              "codigo": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "nombre": {
+                "type": "string"
+              }
+            }
+          },
+          "x-fuente": "pdf:cuadro_priorizados",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "humana_simple"
+        },
+        "ambito": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "distritos": {
+              "type": "integer"
+            },
+            "centros_poblados": {
+              "type": "integer"
+            }
+          },
+          "x-fuente": "pdf:reglamento:art8",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "humana_simple"
+        },
+        "techo_presupuestal_soles": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Nulo si la norma no lo fija; impide verificar que la suma de montos asignados respete el tope.",
+          "x-fuente": "externo:informe_ogpp",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble",
+          "x-guarda": "R-techo"
+        },
+        "marco_legal_citado": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "norma",
+              "estado"
+            ],
+            "properties": {
+              "norma": {
+                "type": "string"
+              },
+              "estado": {
+                "enum": [
+                  "vigente",
+                  "derogada",
+                  "sustituida",
+                  "modificada"
+                ]
+              },
+              "reemplazada_por": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "x-fuente": "pdf:reglamento:art6",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "humana_simple"
+        }
+      }
+    },
+    "proyecto": {
+      "type": "object",
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "$ref": "#/$defs/sin_datos_personales"
+        }
+      ],
+      "required": [
+        "codigo_pp",
+        "cui",
+        "linea_estrategica",
+        "criterios",
+        "puntaje_total",
+        "rango",
+        "condicion"
+      ],
+      "properties": {
+        "codigo_pp": {
+          "type": "string",
+          "pattern": "^PP[0-9]{4}-[0-9]{3}$",
+          "x-fuente": "calculado",
+          "x-admision": "cadena",
+          "x-validacion": "automatica",
+          "x-guarda": "G10"
+        },
+        "cui": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]{7}$",
+          "description": "Código Único de Inversiones. La ficha de información mínima del reglamento no lo pide: completar desde el Banco de Inversiones.",
+          "x-fuente": "externo:banco_inversiones",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble",
+          "x-guarda": "G11"
+        },
+        "nombre_proyecto": {
+          "type": "string",
+          "x-fuente": "pdf:cuadro_priorizados",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "humana_simple"
+        },
+        "centro_poblado": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-fuente": "pdf:cuadro_priorizados",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "humana_simple"
+        },
+        "linea_estrategica": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4,
+          "x-fuente": "pdf:cuadro_priorizados",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble"
+        },
+        "criterios": {
+          "type": "array",
+          "minItems": 13,
+          "maxItems": 13,
+          "items": false,
+          "prefixItems": [
+            {
+              "enum": [
+                1,
+                5
+              ],
+              "$comment": "0 extrema_pobreza"
+            },
+            {
+              "enum": [
+                1,
+                5
+              ],
+              "$comment": "1 mas_pobres_sectores_riesgo"
+            },
+            {
+              "enum": [
+                1,
+                5
+              ],
+              "$comment": "2 caracter_productivo"
+            },
+            {
+              "enum": [
+                1,
+                5
+              ],
+              "$comment": "3 proyecto_continuidad"
+            },
+            {
+              "enum": [
+                1,
+                3,
+                5,
+                8
+              ],
+              "$comment": "4 necesidades_basicas_insatisfechas"
+            },
+            {
+              "enum": [
+                1,
+                5
+              ],
+              "$comment": "5 contrapartida"
+            },
+            {
+              "enum": [
+                1,
+                3,
+                5,
+                8
+              ],
+              "$comment": "6 cobertura"
+            },
+            {
+              "enum": [
+                1,
+                5
+              ],
+              "$comment": "7 caracter_inclusivo"
+            },
+            {
+              "enum": [
+                1,
+                5
+              ],
+              "$comment": "8 caracter_intersectorial"
+            },
+            {
+              "enum": [
+                1,
+                5
+              ],
+              "$comment": "9 empleo_local"
+            },
+            {
+              "enum": [
+                1,
+                5
+              ],
+              "$comment": "10 efectos_actividades_economicas"
+            },
+            {
+              "enum": [
+                1,
+                5
+              ],
+              "$comment": "11 ingresos_propios"
+            },
+            {
+              "enum": [
+                1,
+                5
+              ],
+              "$comment": "12 nivel_estudio"
+            }
+          ],
+          "description": "Vector posicional en el orden del Anexo 2. El esquema valida el rango por criterio; la suma y el rango los valida el backend (y el contrato, guarda G10).",
+          "x-fuente": "pdf:anexo2",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble",
+          "x-guarda": "G10"
+        },
+        "puntaje_total": {
+          "type": "integer",
+          "minimum": 13,
+          "maximum": 71,
+          "x-fuente": "calculado",
+          "x-admision": "cadena",
+          "x-validacion": "automatica",
+          "x-guarda": "G10"
+        },
+        "rango": {
+          "type": "integer",
+          "minimum": 1,
+          "x-fuente": "calculado",
+          "x-admision": "cadena",
+          "x-validacion": "automatica",
+          "x-guarda": "G10"
+        },
+        "condicion": {
+          "enum": [
+            "principal",
+            "alternativo"
+          ],
+          "x-fuente": "pdf:acta",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble",
+          "x-guarda": "G10"
+        },
+        "monto_asignado_soles": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "x-fuente": "pdf:cuadro_priorizados",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble",
+          "x-guarda": "G10"
+        },
+        "beneficiarios": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "x-fuente": "pdf:cuadro_priorizados",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "humana_simple"
+        },
+        "nivel_estudio": {
+          "enum": [
+            "idea",
+            "perfil",
+            "expediente_tecnico",
+            "ninguno",
+            null
+          ],
+          "x-fuente": "pdf:cuadro_priorizados",
+          "x-admision": "fuera_de_cadena",
+          "x-validacion": "humana_simple"
+        }
+      },
+      "if": {
+        "properties": {
+          "condicion": {
+            "const": "principal"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "monto_asignado_soles"
+        ],
+        "properties": {
+          "monto_asignado_soles": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "inconsistencia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "codigo",
+        "severidad",
+        "descripcion",
+        "ubicacion",
+        "transiciones_afectadas"
+      ],
+      "properties": {
+        "codigo": {
+          "type": "string",
+          "pattern": "^INC-[0-9]{2}$",
+          "x-admision": "cadena"
+        },
+        "severidad": {
+          "enum": [
+            "bloqueante",
+            "alerta",
+            "informativa"
+          ],
+          "x-admision": "cadena"
+        },
+        "descripcion": {
+          "type": "string",
+          "x-admision": "fuera_de_cadena"
+        },
+        "ubicacion": {
+          "type": "string",
+          "x-admision": "fuera_de_cadena"
+        },
+        "campos_afectados": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-admision": "fuera_de_cadena"
+        },
+        "transiciones_afectadas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/transicion"
+          },
+          "x-admision": "cadena"
+        }
+      }
+    },
+    "validacion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "estado",
+        "revisores",
+        "fecha_validacion",
+        "inconsistencias"
+      ],
+      "properties": {
+        "estado": {
+          "enum": [
+            "borrador",
+            "observado",
+            "aprobado_para_anclaje"
+          ],
+          "x-fuente": "calculado",
+          "x-admision": "cadena",
+          "x-validacion": "humana_doble"
+        },
+        "revisores": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/rol"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Roles, nunca personas.",
+          "x-fuente": "calculado",
+          "x-admision": "cadena",
+          "x-validacion": "automatica"
+        },
+        "fecha_validacion": {
+          "type": "string",
+          "format": "date-time",
+          "x-fuente": "calculado",
+          "x-admision": "cadena",
+          "x-validacion": "automatica"
+        },
+        "inconsistencias": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/inconsistencia"
+          }
+        }
+      }
+    }
+  }
+}
